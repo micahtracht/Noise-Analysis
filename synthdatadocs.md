@@ -1,4 +1,3 @@
-# Noise-Analysis
 
 ## Synthetic Data Generator
 
