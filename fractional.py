@@ -52,7 +52,15 @@ class FractionalKalmanCaterpillar(QCAlgorithm):
             k += 1
             
         # Return -w[1:] to predict X_t using X_{t-1}, X_{t-2}...
-        return -np.array(w[1:])
+        coeffs = -np.array(w[1:], dtype=float)
+
+        # The infinite GL autoregressive coefficients sum to 1.0. Normalize
+        # the truncated vector so a flat basis is predicted without scale bias.
+        coeff_sum = np.sum(coeffs)
+        if coeff_sum > 0:
+            coeffs /= coeff_sum
+
+        return coeffs
 
     def OnData(self, slice):
         if self.spot in slice.Bars: self.last_prices[self.spot] = slice.Bars[self.spot].Close
@@ -68,7 +76,7 @@ class FractionalKalmanCaterpillar(QCAlgorithm):
             return
 
         hist_vec = np.array([x for x in self.basis_history])
-        dynamic_R = np.var(hist_vec) if np.var(hist_vec) > 0 else 1e-5
+        dynamic_R = max(float(np.var(hist_vec)), self.R)
 
         # --- 1. A PRIORI PREDICTION (Strictly No Bias) ---
         predictions = np.zeros(self.num_models)
