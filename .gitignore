@@ -85,7 +85,6 @@ results/
 reports/
 figures/
 plots/
-*.csv
 *.parquet
 *.feather
 *.h5
